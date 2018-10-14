@@ -1,62 +1,57 @@
 $(document).ready(function(){
     console.log("Connected!!");
-    var members=[]
+    var ppl=[], name, regno, email, roomno, pnum,ob={}
     //Event added on team_register button !!
     $("#team_register").on("click",function(event){
         console.log("Clicked");
         var teamname=$("#teamName").val();
         for(var i=1;i<=4;i++)
         {
-            var name=$("#name"+i).val();
-            var regno=$("#regno"+i).val();
-            var email=$("#email"+i).val();
-            var roomno=$("#roomno"+i).val();
-            var pnum=$("#pnum"+i).val();
-            var ob={
-                name:name,
-                email:email,
+            name=$("#name"+i).val();
+            regno=$("#regno"+i).val();
+            email=$("#email"+i).val();
+            roomno=$("#roomno"+i).val();
+            pnum=$("#pnum"+i).val();
+            ob={
+                name,
+                email,
                 rollno:regno,
-                roomno:roomno,
+                roomno,
                 phone:pnum
             }
             if(name!="" && regno!="" && email!="" && roomno!="" && pnum!="")
             {
-                console.log("added");
-                members.push(ob);
+                ppl.push(ob)
+            } else{
+                alert("One or more fields empty");
+                location.reload();
             }
             
             
         }
-        var data=
-        {
-            
+
+        var data={        
             name:teamname,
-            ppl:members
+            ppl:JSON.stringify(ppl)
         };
-        console.log(data);
-        if(members.length>=1)
+        if(ppl.length>=3)
         {
+           
             $.ajax({
                 //add header
                 type:"POST",
-                url:"http://hackaportal.herokuapp.com/teams/add",
-                data:
-                {
-                    
-                    name:teamname,
-                    ppl:members
-                },
+                url:"/teams/add",
+                data,
                 headers:
-                    {"Access-Control-Allow-Origin":"*"
-                    }
+                    {"Access-Control-Allow-Origin":"*"},
+                success:(data)=>{
+                    if(data.message)
+                        alert(data.message)
+                    else 
+                        alert("Done")
+                }
                 
                 
-            }).done(function(data){
-                console.log(data);
-            }).fail(function(err){
-                //console.log(members);
-                //console.log(members.length);
-                console.log("Error Occured");
             })
             
         }
@@ -68,6 +63,7 @@ $(document).ready(function(){
     })
     //Event added on team_login button
     $("#team_login").on("click",function(event){
+        event.preventDefault();
         var name=$("#teamname").val();
         var pass=$("#pass").val();
         if(name!="" && pass!="")
@@ -75,13 +71,20 @@ $(document).ready(function(){
             $.ajax({
                 //add header
                 type:"POST",
-                url:"http://hackaportal.herokuapp.com/team/login",
+                url:"/teams/login",
                 data:{
-                    "username":name,
-                    "password":pass
+                    username:name,
+                    password:pass
                 }
-            }).done(function(token){
-                //use token
+            }).done(function(data){
+                {
+                    if(data.message)
+                        alert(data.message)
+                    else{
+                        localStorage.setItem("token",data.token);
+                        window.location.replace("/teams/loggedIn")
+                    }
+                }
             }).fail(function(err){
                 console.log("Error Occured !!");
             })
@@ -100,7 +103,7 @@ $(document).ready(function(){
             $ .ajax({
                 //add header
                 type:"POST",
-                url:"http://hackaportal.herokuapp.com/addPitch1",
+                url:"/addPitch1",
                 data:{
                     title:title,
                     content:content
@@ -124,7 +127,7 @@ $(document).ready(function(){
             $.ajax({
                 //add header
                 type:"POST",
-                url:"http://hackaportal.herokuapp.com/team/addRepo",
+                url:"/team/addRepo",
                 data:{
                     data:link
                 }
